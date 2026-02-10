@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MotivateHub - منصة الفيديوهات التحفيزية</title>
+<style>
+/* --- ألوان وواجهة افتراضية فاتحة --- */
+:root {
+  --bg: #f0f8ff;
+  --text: #0b1a2f;
+  --card-bg: #ffffff;
+  --accent: #ffd700;
+}
+body{
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x:hidden;
+  transition: background 0.3s,color 0.3s;
+}
+/* --- خلفية ديناميكية --- */
+body::before{
+  content:'';
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:
+    radial-gradient(circle at 20% 30%,rgba(255,255,255,0.2) 0%,transparent 40%),
+    radial-gradient(circle at 80% 70%,rgba(255,255,255,0.2) 0%,transparent 40%),
+    repeating-linear-gradient(45deg,rgba(0,0,0,0.02),rgba(0,0,0,0.02) 1px,transparent 1px,transparent 15px);
+  z-index:-1;
+}
+/* --- الهيدر --- */
+header{
+  background: #a0d2eb;
+  padding:20px;
+  text-align:center;
+  font-size:1.8rem;
+  font-weight:bold;
+  color: var(--text);
+  text-shadow:1px 1px 2px #fff;
+}
+/* --- التبويبات --- */
+nav{
+  display:flex;
+  position:fixed;
+  bottom:0;
+  width:100%;
+  background:#e0f7fa;
+  border-top:2px solid #ccc;
+}
+nav button{
+  flex:1;
+  padding:12px;
+  border:none;
+  background:#e0f7fa;
+  color:var(--accent);
+  font-weight:bold;
+  cursor:pointer;
+}
+nav button.active{background: var(--accent); color:#fff;}
+main{padding:15px; padding-bottom:220px;}
+.section{display:none;}
+.section.active{display:block;}
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:15px;}
+.card{background: var(--card-bg); border-radius:12px; overflow:hidden; box-shadow:0 5px 15px rgba(0,0,0,.1);}
+.card img, .card video{width:100%; border-radius:10px; margin-top:5px;}
+.card .info{padding:10px;}
+.card .price{color:var(--accent); font-weight:bold; margin-top:5px;}
+button, input, select, textarea{font-family:'Segoe UI',sans-serif;}
+button.action{width:100%; padding:8px; background:#22c55e; border:none; color:#000; font-weight:bold; margin-top:8px; cursor:pointer;}
+input, select, textarea{width:100%; padding:8px; margin:5px 0; border-radius:6px; border:1px solid #ccc; background:#f8f8f8; color:#000;}
+textarea{resize:none;}
+#notifications{position:fixed; top:10px; right:10px; z-index:999;}
+.notify{background:var(--accent); color:#000; padding:10px; border-radius:8px; margin-top:5px; box-shadow:0 5px 10px rgba(0,0,0,.3);}
+</style>
+</head>
+<body>
+
+<header>🎬 MotivateHub</header>
+<div id="notifications"></div>
+
+<main>
+<!-- الصفحة الرئيسية -->
+<div class="section active" id="home">
+<h2 style="text-align:center;">مرحبا بك في MotivateHub</h2>
+<p style="text-align:center;">هذه المنصة تقدم لك أفضل الفيديوهات التحفيزية والتعليمية، يمكنك رفع الفيديوهات الخاصة بك ومشاركتها، وشراء الفيديوهات الأخرى مقابل نقاط!</p>
+<p style="text-align:center;">تعلّم، شاهد، وشارك! ✨</p>
+</div>
+
+<!-- سوق الفيديوهات -->
+<div class="section" id="market">
+<h2 style="text-align:center;">سوق الفيديوهات</h2>
+<div class="grid" id="videos"></div>
+</div>
+
+<!-- رفع الفيديو -->
+<div class="section" id="upload">
+<h2 style="text-align:center;">رفع فيديو جديد من الهاتف</h2>
+<input type="file" id="videoFile" accept="video/*">
+<input type="file" id="thumbFile" accept="image/*">
+<input id="vTitle" placeholder="عنوان الفيديو">
+<select id="vType"><option value="">اختر النوع</option><option value="تعليمي">تعليمي</option><option value="تحفيزي">تحفيزي</option></select>
+<select id="vDuration"><option value="">اختر المدة</option><option value="قصير">قصير</option><option value="متوسط">متوسط</option></select>
+<input type="number" id="vPoints" placeholder="السعر بالنقاط">
+<select id="vPrivate"><option value="public">عام</option><option value="private">خاص - نقاط للمشاهدة</option></select>
+<button class="action" onclick="uploadVideo()">رفع الفيديو</button>
+<p style="color:red; font-size:0.9rem;">* المكافأة بالنقاط تحصل فقط عند شراء الفيديو وليس عند الرفع</p>
+</div>
+
+<!-- الحساب الشخصي -->
+<div class="section" id="profile">
+<h2 style="text-align:center;">حسابك الشخصي</h2>
+<p>نقاطك: <b id="userPoints">50</b> ⭐</p>
+<button class="action" onclick="dailyBonus()">نقطة يومية 🎁</button>
+
+<h3>فيديوهاتك المرفوعة</h3>
+<div class="grid" id="myUploads"></div>
+
+<h3>فيديوهاتك المشتراة</h3>
+<div class="grid" id="myPurchases"></div>
+
+<h3>المكافآت</h3>
+<button class="action" onclick="watchAd()">مشاهدة إعلان +5 نقاط</button>
+
+<h3>الإعدادات</h3>
+<label>الوضع:</label>
+<select id="themeSelect" onchange="changeTheme(this.value)">
+<option value="light">فاتح</option>
+<option value="dark">داكن</option>
+</select>
+<label>حجم الخط:</label>
+<select id="fontSizeSelect" onchange="changeFontSize(this.value)">
+<option value="16px">صغير</option>
+<option value="18px" selected>متوسط</option>
+<option value="20px">كبير</option>
+</select>
+<label>تفعيل الإشعارات:</label>
+<select id="notifSelect" onchange="toggleNotifications(this.value)">
+<option value="on">تشغيل</option>
+<option value="off">إيقاف</option>
+</select>
+<button class="action" onclick="resetData()">إعادة ضبط النقاط والفيديوهات</button>
+</div>
+
+</main>
+
+<nav>
+<button class="active" onclick="show('home',this)">الرئيسية</button>
+<button onclick="show('market',this)">السوق</button>
+<button onclick="show('upload',this)">رفع فيديو</button>
+<button onclick="show('profile',this)">حسابي</button>
+</nav>
+
+<script>
+// بيانات المستخدم
+let videos = JSON.parse(localStorage.getItem("videos")||"[]");
+let userPoints = parseInt(localStorage.getItem("userPoints")||50);
+let myUploads = JSON.parse(localStorage.getItem("myUploads")||"[]");
+let myPurchases = JSON.parse(localStorage.getItem("myPurchases")||"[]");
+let watchedVideos = JSON.parse(localStorage.getItem("watchedVideos")||"[]");
+let notificationsOn = true;
+
+// إشعارات
+function notify(msg){if(notificationsOn){let d=document.createElement("div");d.className="notify";d.textContent=msg;document.getElementById("notifications").appendChild(d);setTimeout(()=>d.remove(),3000);}}
+
+// التنقل بين الصفحات
+function show(id,btn){document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");if(btn){document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");}}
+
+// عرض الفيديوهات في السوق
+function renderVideos(){const container=document.getElementById("videos");container.innerHTML="";videos.forEach((v,i)=>{let vidURL=v.file;let thumbURL=v.thumbFile;container.innerHTML+=`<div class="card"><video src="${vidURL}" controls></video><div class="info"><b>${v.title}</b><br>${v.type} • ${v.duration}<br>نقاط: ${v.points}<br>نوع: ${v.vPrivate||"عام"}<button class="action" onclick="buyVideo(${i})">شراء</button></div></div>`})}
+
+// شراء الفيديو
+function buyVideo(i){let v=videos[i];if(userPoints<v.points){alert("نقاطك غير كافية");return;}userPoints-=v.points;myPurchases.push(v);notify(`تم شراء الفيديو: ${v.title} ✅`);saveData();renderProfile();renderVideos();}
+
+// رفع الفيديو من الهاتف
+function uploadVideo(){
+let file=document.getElementById("videoFile").files[0];
+let thumb=document.getElementById("thumbFile").files[0];
+let title=document.getElementById("vTitle").value;
+let type=document.getElementById("vType").value;
+let duration=document.getElementById("vDuration").value;
+let points=parseInt(document.getElementById("vPoints").value)||5;
+let vPrivate=document.getElementById("vPrivate").value||"public";
+if(!file||!thumb||!title||!type||!duration){alert("اكمل جميع الحقول");return;}
+let videoURL=URL.createObjectURL(file);
+let thumbURL=URL.createObjectURL(thumb);
+let newVideo={title,type,duration,points,vPrivate,file:videoURL,thumbFile:thumbURL};
+videos.push(newVideo);myUploads.push(newVideo);notify("تم رفع الفيديو ✅");saveData();renderVideos();renderProfile();}
+
+// Daily Bonus
+function dailyBonus(){let lastDaily=localStorage.getItem("lastDaily");let today=new Date().toLocaleDateString();if(lastDaily===today){alert("لقد حصلت على النقطة اليوم");return;}userPoints+=3;localStorage.setItem("lastDaily",today);notify("نقطة يومية +3 ⭐");saveData();renderProfile();}
+
+// مشاهدة إعلان للحصول على نقاط
+function watchAd(){alert("محاكاة مشاهدة إعلان لمدة 5 ثواني...");setTimeout(()=>{userPoints+=5;notify("+5 نقاط من مشاهدة الإعلان");saveData();renderProfile();},2000);}
+
+// الإعدادات
+function changeTheme(val){if(val==="dark"){document.body.style.background="#0b1a2f";document.body.style.color="#fff";}else{document.body.style.background="#f0f8ff";document.body.style.color="#0b1a2f";}}
+function changeFontSize(val){document.body.style.fontSize=val;}
+function toggleNotifications(val){notificationsOn=(val==="on");}
+function resetData(){if(confirm("هل تريد إعادة ضبط البيانات؟")){videos=[];userPoints=50;myUploads=[];myPurchases=[];saveData();renderVideos();renderProfile();notify("تم إعادة الضبط ✅");}}
+
+// حفظ البيانات
+function saveData(){localStorage.setItem("videos",JSON.stringify(videos));localStorage.setItem("userPoints",userPoints);localStorage.setItem("myUploads",JSON.stringify(myUploads));localStorage.setItem("myPurchases",JSON.stringify(myPurchases));}
+
+// عرض الحساب الشخصي
+function renderProfile(){document.getElementById("userPoints").textContent=userPoints;const up=document.getElementById("myUploads");up.innerHTML="";myUploads.forEach(v=>{up.innerHTML+=`<div class="card"><video src="${v.file}" controls></video><div class="info"><b>${v.title}</b><br>${v.type} • ${v.duration}<br>نقاط: ${v.points}<br>نوع: ${v.vPrivate||"عام"}</div></div>`});const pur=document.getElementById("myPurchases");pur.innerHTML="";myPurchases.forEach(v=>{pur.innerHTML+=`<div class="card"><video src="${v.file}" controls></video><div class="info"><b>${v.title}</b><br>${v.type} • ${v.duration}<br>نقاط: ${v.points}<br>نوع: ${v.vPrivate||"عام"}</div></div>`});}
+
+renderVideos();
+renderProfile();
+</script>
+
+</body>
+</html>
